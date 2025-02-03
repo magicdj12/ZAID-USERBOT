@@ -23,10 +23,11 @@ from Zaid.helper.data import Data
 from Zaid.helper.inline import inline_wrapper, paginate_help
 
 async def get_readable_time(seconds: int) -> str:
+    """تبدیل ثانیه به فرمت قابل خواندن زمان"""
     count = 0
     up_time = ""
     time_list = []
-    time_suffix_list = ["s", "m", "Jam", "Hari"]
+    time_suffix_list = ["ثانیه", "دقیقه", "ساعت", "روز"]
 
     while count < 4:
         count += 1
@@ -48,28 +49,29 @@ async def get_readable_time(seconds: int) -> str:
 
 
 async def alive_function(message: Message, answers):
+    """تابع نمایش وضعیت ربات"""
     uptime = await get_readable_time((time.time() - StartTime))
     msg = f"""
-<b> — Hey, I am alive.</b>
+<b> — سلام، من فعال هستم.</b>
 
-<b> • User :</b> {message.from_user.mention}
-<b> • Plugins :</b> <code>{len(CMD_HELP)} Modules</code>
-<b> • Python Version :</b> <code>{pyver.split()[0]}</code>
-<b> • Pyrogram Version :</b> <code>{pyrover}</code>
-<b> • Bot Uptime :</b> <code>{uptime}</code>
+<b> • کاربر :</b> {message.from_user.mention}
+<b> • پلاگین‌ها :</b> <code>{len(CMD_HELP)} ماژول</code>
+<b> • نسخه پایتون :</b> <code>{pyver.split()[0]}</code>
+<b> • نسخه پایروگرام :</b> <code>{pyrover}</code>
+<b> • زمان فعالیت ربات :</b> <code>{uptime}</code>
 
-<b> — Bot version: 2.0</b>
+<b> — نسخه ربات: 2.0</b>
 """
     answers.append(
         InlineQueryResultArticle(
-            title="Alive",
-            description="Check Bot's Stats",
+            title="وضعیت",
+            description="بررسی وضعیت ربات",
             thumb_url="https://telegra.ph/file/cc0890d0876bc18c19e05.jpg",
             input_message_content=InputTextMessageContent(
                 msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True
             ),
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("──「 ʜᴇʟᴘ 」──", callback_data="helper")]]
+                [[InlineKeyboardButton("──「 راهنما 」──", callback_data="helper")]]
             ),
         )
     )
@@ -77,11 +79,12 @@ async def alive_function(message: Message, answers):
 
 
 async def help_function(answers):
+    """تابع نمایش راهنمای دستورات"""
     bttn = paginate_help(0, CMD_HELP, "helpme")
     answers.append(
         InlineQueryResultArticle(
-            title="Help Article!",
-            description="Check Command List & Help",
+            title="راهنما!",
+            description="مشاهده لیست دستورات و راهنما",
             thumb_url="https://telegra.ph/file/cc0890d0876bc18c19e05.jpg",
             input_message_content=InputTextMessageContent(
                 Data.text_help_menu.format(len(CMD_HELP))
@@ -95,6 +98,7 @@ async def help_function(answers):
 @app.on_inline_query()
 @inline_wrapper
 async def inline_query_handler(client: Client, query):
+    """مدیریت کننده کوئری‌های inline"""
     try:
         text = query.query.strip().lower()
         string_given = query.query.lower()
@@ -102,9 +106,11 @@ async def inline_query_handler(client: Client, query):
         if text.strip() == "":
             return
         elif text.split()[0] == "alive":
+            # نمایش وضعیت ربات
             answerss = await alive_function(query, answers)
             await client.answer_inline_query(query.id, results=answerss, cache_time=10)
         elif string_given.startswith("helper"):
+            # نمایش منوی راهنما
             answers = await help_function(answers)
             await client.answer_inline_query(query.id, results=answers, cache_time=0)
     except Exception as e:
